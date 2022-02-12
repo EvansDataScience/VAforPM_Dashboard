@@ -1,0 +1,39 @@
+---
+title: "Dashbords from Evans UW"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard) # always
+```
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+[comment]: # (you will change this latter)
+
+### Write here a title!
+
+```{r}
+# code coming soon
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Write here another title!
+
+```{r}
+# code coming soon
+```
+
+### and another one will be needed here! 
+
+```{r}
+# code coming soon
+
+```
+

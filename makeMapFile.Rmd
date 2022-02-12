@@ -1,27 +1,51 @@
 
-This is a basic code to produce a file:
+In the session about maps, we used and prepare these data:
+
 
 ```{r, message=FALSE, results='hide'}
-myWeb1="https://github.com/Visual-Analytics-Project-UW-EvansSchool/ourMap/raw/main/"
-myWeb2="https://github.com/Visual-Analytics-Project-UW-EvansSchool/mergedData/raw/main/"
-
-
-
-# map
+# maps
+linkMap="https://github.com/EvansDataScience/VAforPM_Spatial/raw/main/worldMap.geojson" 
 library(sf)
-mapWorld=read_sf(paste0(myWeb1,"worldMap.geojson"))
-# data
-dataCSV=read.csv(paste0(myWeb2,"merged_data.csv"))
+mapWorld=read_sf(linkMap)
 
-#new map 
-newMap=merge(mapWorld, #map first
+# csv data
+linkCSV='https://github.com/EvansDataScience/VAforPM_Spatial/raw/main/merged_data.csv'
+dataCSV=read.csv(linkCSV)
+dataCSV$HDI_S=as.vector(scale(dataCSV$HDI))
+dataCSV$DEM_S=as.vector(scale(dataCSV$DemoIndex))
+dataCSV$MIL_S=as.vector(scale(dataCSV$mil_expend))
+
+### updating map
+# 'mapWorldVars' is a new map 
+mapWorldVars=merge(mapWorld, #map first
                    dataCSV, 
-                   by='ISO3',all.x=T) 
-st_write(newMap, 
+                   by='ISO3') 
+
+# info about safety in the cities
+library(rio)
+linkCity="https://github.com/EvansDataScience/VAforPM_Spatial/raw/main/citiesloc.xlsx"
+SafeCityData=import(linkCity)
+SafeCityPoints = st_as_sf(SafeCityData, 
+                      coords = c("lng", "lat"),
+                      crs = st_crs(mapWorldVars)) # shared
+
+```
+
+
+Now let me save those maps as a file:
+
+```{r}
+#saving
+st_write(mapWorldVars, 
          dsn = "mapWorldVars.geojson",
          layer = "mapWorldVars.geojson",
          driver = "GeoJSON")
+
+st_write(SafeCityPoints, 
+         dsn = "SafeCityPoints.geojson",
+         layer = "SafeCityPoints.geojson",
+         driver = "GeoJSON")
 ```
 
-The file **newMap** has all the info, even for the rows that did not match.
+
 
