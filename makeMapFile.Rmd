@@ -20,21 +20,24 @@ dataCSV$cluster=factor(dataCSV$cluster,
                            labels=c("low","mid","best"), 
                            ordered=T)
 
-linkMap="https://github.com/EvansDataScience/VAforPM_Spatial/raw/main/worldMap.geojson" 
-
-library(sf)
-mapWorld=read_sf(linkMap)
 
 
 # info about safety in the cities
 library(rio)
 linkCity="https://github.com/EvansDataScience/VAforPM_Spatial/raw/main/citiesloc.xlsx"
 SafeCityData=import(linkCity)
-SafeCityPoints = st_as_sf(SafeCityData, 
-                      coords = c("lng", "lat"),
-                      crs = st_crs(mapWorld)) # shared
-
+varsidx=c("DIGITAL","HEALTH","INFRASTRUCTURE","PERSONAL")
+set.seed(123)
+distMatrix2=cluster::daisy(SafeCityData[,varsidx])
+res.pam2=pam(distMatrix2,k = 3,cluster.only = F)
+SafeCityData$cluster=res.pam2$clustering
+SafeCityData$cluster=factor(SafeCityData$cluster,
+                       levels=c(3,1,2),
+                       labels=c("bad","middle",'good'),
+                       ordered=T)
 ```
+
+
 
 
 Now let me save those maps as a file:
@@ -43,11 +46,8 @@ Now let me save those maps as a file:
 #saving
 
 saveRDS(dataCSV,file = 'dataCSV.rds')
+saveRDS(SafeCityData,file = 'SafeCityData.rds')
 
-st_write(SafeCityPoints, 
-         dsn = "SafeCityPoints.geojson",
-         layer = "SafeCityPoints.geojson",
-         driver = "GeoJSON")
 ```
 
 
