@@ -102,7 +102,6 @@ Row
 ### Map 1
 
 
-
 ```{r}
 #the text  aesthetics is NOt for ggplot
 colMap= base + geom_sf(aes(fill=DemoIndex,
@@ -115,6 +114,20 @@ colMap=colMap + scale_fill_gradient(low = 'red',
 colMap%>%ggplotly()
 ```
 
+### Map 2
+```{r}
+#the text  aesthetics is NOt for ggplot
+colMap= base + geom_sf(aes(fill=cluster,
+                           text=Country),
+                       color=NA)
+
+colMap=colMap + scale_fill_gradient(low = 'red',
+                                    high= 'blue',
+                                    na.value = "grey90")
+colMap%>%ggplotly()
+```
+Row 
+-----------------------------------------------------------------------
 
 ### Map 2
 

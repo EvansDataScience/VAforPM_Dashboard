@@ -8,10 +8,13 @@ output:
 ---
 
 ```{r setup, include=FALSE}
+library(flexdashboard)
+
+###
 library(ggplot2)
 library(plotly)
 library(plyr)
-library(flexdashboard)
+
 library(sf)
 
 myWeb="https://github.com/EvansDataScience/VAforPM_Dashboard/raw/main/"
