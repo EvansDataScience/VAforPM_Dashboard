@@ -3,11 +3,6 @@ In the session about maps, we used and prepare these data:
 
 
 ```{r, message=FALSE, results='hide'}
-# maps
-linkMap="https://github.com/EvansDataScience/VAforPM_Spatial/raw/main/worldMap.geojson" 
-library(sf)
-mapWorld=read_sf(linkMap)
-
 # csv data
 linkCSV='https://github.com/EvansDataScience/VAforPM_Spatial/raw/main/merged_data.csv'
 dataCSV=read.csv(linkCSV)
@@ -25,11 +20,11 @@ dataCSV$cluster=factor(dataCSV$cluster,
                            labels=c("low","mid","best"), 
                            ordered=T)
 
-### updating map
-# 'mapWorldVars' is a new map 
-mapWorldVars=merge(mapWorld, #map first
-                   dataCSV, 
-                   by='ISO3') 
+linkMap="https://github.com/EvansDataScience/VAforPM_Spatial/raw/main/worldMap.geojson" 
+
+library(sf)
+mapWorld=read_sf(linkMap)
+
 
 # info about safety in the cities
 library(rio)
@@ -37,7 +32,7 @@ linkCity="https://github.com/EvansDataScience/VAforPM_Spatial/raw/main/citiesloc
 SafeCityData=import(linkCity)
 SafeCityPoints = st_as_sf(SafeCityData, 
                       coords = c("lng", "lat"),
-                      crs = st_crs(mapWorldVars)) # shared
+                      crs = st_crs(mapWorld)) # shared
 
 ```
 
@@ -46,10 +41,8 @@ Now let me save those maps as a file:
 
 ```{r}
 #saving
-st_write(mapWorldVars, 
-         dsn = "mapWorldVars.geojson",
-         layer = "mapWorldVars.geojson",
-         driver = "GeoJSON")
+
+saveRDS(dataCSV,file = 'dataCSV.rds')
 
 st_write(SafeCityPoints, 
          dsn = "SafeCityPoints.geojson",
