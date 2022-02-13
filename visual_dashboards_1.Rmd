@@ -10,16 +10,21 @@ output:
 library(flexdashboard) # always
 ```
 
+[comment]: # (code for plots in this column)
+
 Column {data-width=650}
 -----------------------------------------------------------------------
 
-[comment]: # (you will change this latter)
+
 
 ### Write here a title!
 
 ```{r}
 # code coming soon
 ```
+
+
+[comment]: # (code for plots in this column)
 
 Column {data-width=350}
 -----------------------------------------------------------------------

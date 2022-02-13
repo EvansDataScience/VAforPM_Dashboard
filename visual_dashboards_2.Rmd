@@ -8,12 +8,14 @@ output:
 
 ```{r setup, include=FALSE}
 library(flexdashboard)
-
+###
 library(sf)
 library(ggplot2)
-myWeb="https://github.com/Visual-Analytics-Project-UW-EvansSchool/ourMap/raw/main/"
+myWeb="https://github.com/EvansDataScience/VAforPM_Dashboard/raw/main/"
 mapWorldVars=read_sf(paste0(myWeb,"mapWorldVars.geojson"))
 ```
+
+[comment]: # (code for plots in this column)
 
 Column {data-width=650}
 -----------------------------------------------------------------------
@@ -25,6 +27,8 @@ base=ggplot(data=mapWorldVars) + theme_light()
 hist1=base + geom_histogram(aes(mil_expend))
 hist1
 ```
+
+[comment]: # (code for plots in this column)
 
 Column {data-width=350}
 -----------------------------------------------------------------------

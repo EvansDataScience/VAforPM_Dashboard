@@ -3,9 +3,8 @@ title: "Dashboards at EVANS UW"
 author: "Great student"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: rows
-    social: menu
-    source_code: embed
+    orientation: rows # (Plots appear by ROW)
+    social: menu # to share your dashboard
 ---
 
 ```{r setup, include=FALSE}
@@ -15,12 +14,16 @@ library(plyr)
 library(flexdashboard)
 library(sf)
 
-myWeb="https://github.com/Visual-Analytics-Project-UW-EvansSchool/ourMap/raw/main/"
+myWeb="https://github.com/EvansDataScience/VAforPM_Dashboard/raw/main/"
 mapWorldVars=read_sf(paste0(myWeb,"mapWorldVars.geojson"))
 ```
 
+[comment]: # (THIS CREATES A TAB)
+
 Static Plots
 =======================================================================
+
+[comment]: # (Plots appear by ROW)
 
 Row
 -----------------------------------------------------------------------
@@ -41,6 +44,8 @@ ps2=base + geom_boxplot(aes(y= mil_expend))
 ps2
 ```
 
+[comment]: # (Plots appear by ROW)
+
 Row
 -----------------------------------------------------------------------
 
@@ -57,9 +62,13 @@ ps3
 ps4=base + geom_point(aes(x=HDI,y= DemoIndex)) 
 ps4
 ```
+[comment]: # (THIS CREATES A TAB)
+
 
 Interactive Plots
 =======================================================================
+
+[comment]: # (Plots appear by ROW)
 
 Row
 -----------------------------------------------------------------------
@@ -78,6 +87,8 @@ pi2=base + geom_boxplot(aes(y=DemoIndex))
 ggplotly(pi2)
 
 ```
+
+[comment]: # (Plots appear by ROW)
 
 Row
 -----------------------------------------------------------------------

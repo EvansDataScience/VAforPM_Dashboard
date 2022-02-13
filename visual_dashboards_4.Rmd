@@ -5,18 +5,20 @@ output:
   flexdashboard::flex_dashboard:
     orientation: rows
     social: menu
-    source_code: embed
+    source_code: embed # share your code?
 ---
 
 ```{r setup, include=FALSE}
+library(flexdashboard)
+###
 library(ggplot2)
 library(plotly)
 library(plyr)
-library(flexdashboard)
 library(sf)
 
-myWeb="https://github.com/Visual-Analytics-Project-UW-EvansSchool/ourMap/raw/main/"
+myWeb="https://github.com/EvansDataScience/VAforPM_Dashboard/raw/main/"
 mapWorldVars=read_sf(paste0(myWeb,"mapWorldVars.geojson"))
+SafeCityPoints=read_sf(paste0(myWeb,"SafeCityPoints.geojson"))
 ```
 
 Static Plots
@@ -89,32 +91,37 @@ pi3=base + geom_point(aes(x=HDI,y= mil_expend))
 ggplotly(pi3)
 ```
 
-### Map
+
+Interactive Maps
+=======================================================================
+
+
+Row 
+-----------------------------------------------------------------------
+
+### Map 1
+
+
+
+```{r}
+#the text  aesthetics is NOt for ggplot
+colMap= base + geom_sf(aes(fill=DemoIndex,
+                           text=Country),
+                       color=NA)
+
+colMap=colMap + scale_fill_gradient(low = 'red',
+                                    high= 'blue',
+                                    na.value = "grey90")
+colMap%>%ggplotly()
+```
+
+
+### Map 2
 
 ```{r, eval=TRUE,warning=FALSE,message=FALSE}
-library(RColorBrewer)
-library(leaflet)
+basep=ggplot(data = mapWorldVars) + geom_sf(fill='grey90',color=NA) + theme_bw()
 
-numberOfClasses = 5
-colorForScale='YlGnBu' # color scale
-bins = quantile(mapWorldVars$DemoIndex, 
-                probs = seq(0, 1, 1/numberOfClasses),
-                na.rm = T) %>% unname()
-palFun <- colorBin(colorForScale, 
-                domain = mapWorldVars$DemoIndex,
-                bins = bins)
-
-#baseLayer
-baseLayer=leaflet(mapWorldVars)%>%
-             addProviderTiles("CartoDB.Positron")
-
-demoPlot=baseLayer %>% 
-          addPolygons(fillColor = ~palFun(DemoIndex),
-                      weight = 0, #border thickness
-                      color = "white",#border color
-                      fillOpacity = 0.7) %>% 
-            addLegend(pal = palFun,
-                      position = 'bottomright',
-                      values = ~DemoIndex)
-demoPlot
+points1=basep + geom_sf(data=SafeCityPoints,
+                       aes(text=city))
+points1%>%ggplotly()
 ```
