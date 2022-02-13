@@ -3,7 +3,6 @@ title: "Dashboards at EVANS UW"
 author: "Great student"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: rows
     social: menu
     source_code: embed # share your code?
 ---
@@ -18,9 +17,16 @@ library(sf)
 
 myWeb="https://github.com/EvansDataScience/VAforPM_Dashboard/raw/main/"
 worldMap=read_sf(paste0(myWeb,"worldMap.geojson"))
-SafeCityPoints=read_sf(paste0(myWeb,"SafeCityPoints.geojson"))
-vars=readRDS(file=url(paste0(myWeb,"dataCSV.rds")))
-worldMapVars=merge(worldMap,vars,by='ISO3')
+
+someVars=readRDS(file=url(paste0(myWeb,"dataCSV.rds")))
+somePoints=readRDS(file=url(paste0(myWeb,"SafeCityData.rds")))
+
+worldMapVars=merge(worldMap,someVars,by='ISO3')
+
+SafeCityPoints = st_as_sf(somePoints, 
+                      coords = c("lng", "lat"),
+                      crs = st_crs(worldMap)) # shared
+
 ```
 
 Static Plots
@@ -32,7 +38,7 @@ Row
 ### Histogram
 
 ```{r}
-base1 = ggplot(data=vars) + theme_classic()
+base1 = ggplot(data=someVars) + theme_classic()
 staticHist=base1 + geom_histogram(aes(x=HDI)) 
 staticHist
 ```
@@ -133,12 +139,110 @@ categoricalMap%>%ggplotly()
 Row 
 -----------------------------------------------------------------------
 
-### Map 2
+### Map 3
 
 ```{r, eval=TRUE,warning=FALSE,message=FALSE}
-basep=ggplot(data = worldMapVars) + geom_sf(fill='grey90',color=NA) + theme_bw()
 
-points1=basep + geom_sf(data=SafeCityPoints,
+points1=base2 + geom_sf(data=SafeCityPoints,
                        aes(text=city))
 points1%>%ggplotly()
 ```
+
+### Map 4
+
+```{r, eval=TRUE,warning=FALSE,message=FALSE}
+
+points1=base2 + geom_sf(data=SafeCityPoints,
+                       aes(text=city,color=cluster))
+points1%>%ggplotly()
+```
+
+
+Leaflet
+=============
+
+
+Column
+-----------------------------------------------------------------------
+
+### Leaflet 1
+
+```{r, echo=FALSE}
+library(RColorBrewer)
+library(leaflet)
+
+###INFO TO PROVIDE
+numberOfClasses = 5
+colorForScale='YlOrRd'
+
+
+CENTER_of_MAP="function(btn, map){map.setView([51.482577, -0.007659], 1)}"
+
+
+#compute bins
+bins = quantile(worldMapVars$DemoIndex, 
+                probs = seq(0, 1, 1/numberOfClasses),
+                na.rm = T)
+##create palette
+palFun <- colorBin(colorForScale, 
+                domain = worldMapVars$DemoIndex,na.color = 'white',
+                reverse = T,
+                bins = bins)
+
+###
+#baseLayer
+baseLayer=leaflet(worldMap)%>%
+             addProviderTiles("CartoDB.Positron")
+
+demoPlot=baseLayer %>% 
+          addPolygons(data=worldMapVars,
+                      fillColor = ~palFun(DemoIndex),
+                      weight = 0, #border thickness
+                      color = "white",#border color
+                      fillOpacity = 0.7) %>% 
+            addLegend(pal = palFun,title = "Democracy Level<br> (Best=10)",
+                      position = 'bottomright',
+                      values = ~worldMapVars$DemoIndex)
+demoPlot %>%
+    
+    # adding the button
+    addEasyButton(
+        easyButton(icon="fa-home", # a symbol
+                   title="Zoom to Level 1",
+                   onClick=JS(CENTER_of_MAP)))
+
+```
+
+
+
+Column
+-----------------------------------------------------------------------
+
+### Leaflet 2
+
+```{r}
+catePal <- colorFactor(colorForScale,
+                       domain=SafeCityPoints$cluster,
+                       reverse = T)
+
+pointLeaf=baseLayer%>% 
+              addCircleMarkers(data= SafeCityPoints,
+                               radius=~population/3000000,
+                               weight = 0,label = ~city,
+                               fillOpacity = 0.7,
+                               color=~catePal(cluster))%>%
+              addLegend(data = SafeCityPoints,
+                        pal = catePal,title = "Safety Level",
+                        position = 'bottomright',
+                        values = ~SafeCityPoints$cluster)
+pointLeaf %>%
+    
+    # adding the button
+    addEasyButton(
+        easyButton(icon="fa-home", # a symbol
+                   title="Zoom to Level 1",
+                   onClick=JS(CENTER_of_MAP)))
+```
+
+
+   
