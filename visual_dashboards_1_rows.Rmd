@@ -1,0 +1,43 @@
+---
+title: "Dashbords from Evans UW"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+```
+
+[comment]: # just one plot in this row
+
+Row
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+load("barsCrimeDay.rdata")
+barsCrimeDay
+```
+
+
+[comment]: # two plots here
+
+Row
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+load("LolliSchoolsLocation.rdata")
+LolliSchoolsLocation
+```
+
+### Chart C
+
+```{r}
+load("BoxReducedLunch.rdata")
+BoxReducedLunch
+```
+

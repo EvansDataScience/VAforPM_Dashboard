@@ -1,0 +1,50 @@
+---
+title: "Dashbords from Evans UW"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+```
+
+[comment]: # three plot here with fade effect
+
+Row {.tabset .tabset-fade}
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+load("barsCrimeDay.rdata")
+barsCrimeDay
+```
+
+### Chart B
+
+```{r}
+load("PointCitiesCluster.rdata")
+PointCitiesCluster
+```
+
+
+### Chart C
+
+```{r}
+load("LolliSchoolsLocation.rdata")
+LolliSchoolsLocation
+```
+
+[comment]: # one plot here
+
+Row 
+-----------------------------------------------------------------------
+
+### Chart D
+
+```{r}
+load("BoxReducedLunch.rdata")
+BoxReducedLunch
+```
+

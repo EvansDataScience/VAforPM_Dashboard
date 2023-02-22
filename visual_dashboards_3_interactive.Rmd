@@ -1,0 +1,137 @@
+---
+title: "Dashbords from Evans UW"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(plotly)
+library(dygraphs)
+```
+
+[comment]: first page notice use of ===
+
+Crime and Safety {data-orientation=rows}
+=====================================
+
+Row
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+load("barsCrimeDay.rdata")
+ggplotly(barsCrimeDay)
+```
+
+Row
+--------------
+### Chart B
+
+```{r}
+load("PointCitiesCluster.rdata")
+ggplotly(PointCitiesCluster)
+```
+
+
+[comment]: second page  AND orientation rows
+
+School {data-orientation=colums}
+=====================================
+
+Column {.tabset .tabset-fade}
+-----------------------------------------------------------------------
+
+### Chart C
+
+```{r}
+load("LolliSchoolsLocation.rdata")
+ggplotly(LolliSchoolsLocation)
+
+```
+
+
+### Chart D
+
+```{r}
+load("BoxReducedLunch.rdata")
+ggplotly(BoxReducedLunch)
+```
+
+Time
+=========
+
+### Crime (I)
+
+```{r}
+load("Line_crimeTime.rdata")
+ggplotly(Line_crimeTime)
+```
+### Crime (II)
+```{r}
+crimeWeeklyCount=readRDS("crimeWeeklyCount.rds")
+
+library(xts)
+library(dygraphs)
+dygraph(xts(crimeWeeklyCount[,-1], #date
+            order.by=crimeWeeklyCount[,1]))%>%#counts
+    dyRangeSelector()
+```
+
+
+Maps (I)
+=====================================
+
+Column {.tabset .tabset-fade}
+------------------
+
+### Colored polygons
+
+```{r}
+load("mapYears.rdata")
+ggplotly(mapYears)
+```
+
+### Points
+
+```{r}
+load("mapCrimeYears.rdata")
+ggplotly(mapCrimeYears)
+```
+
+Maps (II)
+=====================================
+
+Column {.tabset .tabset-fade}
+-------------
+
+### Independent
+
+```{r}
+library(leaflet)
+library(manipulateWidget)
+combineWidgets(readRDS("final2019.rds"),
+     readRDS("final2020.rds"),
+     readRDS("final2021.rds"),
+     readRDS("final2022.rds"))
+```
+
+### Syncronized
+
+```{r}
+library(leaflet)
+library(leaflet.minicharts)
+library(manipulateWidget)
+combineWidgets(readRDS("final2019p.rds")%>%
+    syncWith("maps"),
+     readRDS("final2020p.rds")%>%
+    syncWith("maps"),
+    
+     readRDS("final2021p.rds")%>%
+    syncWith("maps"),
+    
+     readRDS("final2022p.rds")%>%
+    syncWith("maps"))
+```

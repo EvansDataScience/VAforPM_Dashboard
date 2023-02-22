@@ -1,0 +1,45 @@
+---
+title: "Dashbords from Evans UW"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+---
+
+[comment]: two columns, two plots on the right column
+
+```{r setup, include=FALSE}
+library(flexdashboard) # always
+```
+
+
+
+Column {data-width=450}
+-----------------------------------------------------------------------
+
+### Write here a title!
+
+```{r}
+load("BoxReducedLunch.rdata")
+BoxReducedLunch
+```
+
+
+[comment]: this column is wider
+
+Column {data-width=550}
+-----------------------------------------------------------------------
+
+### Write here another title!
+
+```{r}
+load("LolliSchoolsLocation.rdata")
+LolliSchoolsLocation
+```
+
+### and another one will be needed here! 
+
+```{r}
+load("barsCrimeDay.rdata")
+barsCrimeDay
+```
+

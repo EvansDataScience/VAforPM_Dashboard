@@ -1,0 +1,78 @@
+---
+title: "Dashbords from Evans UW"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+```
+
+[comment]: first page notice use of ===
+
+Crime and Safety
+=====================================
+
+Column {.tabset}
+-----------------------------------------------------------------------
+
+### Chart A
+
+```{r}
+load("barsCrimeDay.rdata")
+barsCrimeDay
+```
+
+### Chart B
+
+```{r}
+load("PointCitiesCluster.rdata")
+PointCitiesCluster
+```
+
+
+[comment]: second page  AND orientation rows
+
+School {data-orientation=rows}
+=====================================
+
+Row
+-----------------------------------------------------------------------
+
+### Chart C
+
+```{r}
+load("LolliSchoolsLocation.rdata")
+LolliSchoolsLocation
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Chart D
+
+```{r}
+load("BoxReducedLunch.rdata")
+BoxReducedLunch
+```
+
+Maps
+=====================================
+
+Column {.tabset .tabset-fade}
+------------------
+
+### Colored polygons
+
+```{r}
+load("mapYears.rdata")
+mapYears
+```
+
+### Points
+
+```{r}
+load("mapCrimeYears.rdata")
+mapCrimeYears
+```
