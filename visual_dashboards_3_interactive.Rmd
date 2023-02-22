@@ -98,7 +98,27 @@ ggplotly(mapYears)
 
 ```{r}
 load("mapCrimeYears.rdata")
-ggplotly(mapCrimeYears)
+
+textTitle="Crime events in Seattle by year and type"
+textCapt="Source: Seattle Open Data Portal\nand Seattle Police Department."
+subText="Showing the Worse 4 Neighborhoods (2019-2022)"
+
+ggplotly(mapCrimeYears  +
+  theme(plot.margin = margin(2, 2, 2, 1, "cm"),
+        panel.spacing = unit(0, "lines"),
+        ))%>%
+layout(legend = list(orientation = "v", x = -0.2, y =0.5),
+       title = list(text = paste0(textTitle,
+                                    '<br>',
+                                    '<sup>',
+                                    subText,
+                                    '</sup>')),
+       annotations = 
+ list(x = 1, y = -0.2, text = textCapt, 
+      showarrow = F, xref='paper', yref='paper', 
+      xanchor='right', yanchor='auto', xshift=0, yshift=0,
+      font=list(size=10)))
+    
 ```
 
 Maps (II)
