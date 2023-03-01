@@ -17,8 +17,7 @@ Row
 ### Chart A
 
 ```{r}
-load("barsCrimeDay.rdata")
-barsCrimeDay
+readRDS("barsCrimeDay.rds")
 ```
 
 
@@ -30,14 +29,12 @@ Row
 ### Chart B
 
 ```{r}
-load("LolliSchoolsLocation.rdata")
-LolliSchoolsLocation
+readRDS("LolliSchoolsLocation.rds")
 ```
 
 ### Chart C
 
 ```{r}
-load("BoxReducedLunch.rdata")
-BoxReducedLunch
+readRDS("BoxReducedLunch.rds")
 ```
 

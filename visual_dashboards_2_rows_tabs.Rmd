@@ -17,23 +17,20 @@ Row {.tabset .tabset-fade}
 ### Chart A
 
 ```{r}
-load("barsCrimeDay.rdata")
-barsCrimeDay
+readRDS("barsCrimeDay.rds")
 ```
 
 ### Chart B
 
 ```{r}
-load("PointCitiesCluster.rdata")
-PointCitiesCluster
+readRDS("PointCitiesCluster.rds")
 ```
 
 
 ### Chart C
 
 ```{r}
-load("LolliSchoolsLocation.rdata")
-LolliSchoolsLocation
+readRDS("LolliSchoolsLocation.rds")
 ```
 
 [comment]: # one plot here
@@ -44,7 +41,6 @@ Row
 ### Chart D
 
 ```{r}
-load("BoxReducedLunch.rdata")
-BoxReducedLunch
+readRDS("BoxReducedLunch.rds")
 ```
 

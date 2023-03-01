@@ -19,8 +19,7 @@ Column {data-width=450}
 ### Write here a title!
 
 ```{r}
-load("BoxReducedLunch.rdata")
-BoxReducedLunch
+readRDS("BoxReducedLunch.rds")
 ```
 
 
@@ -32,14 +31,12 @@ Column {data-width=550}
 ### Write here another title!
 
 ```{r}
-load("LolliSchoolsLocation.rdata")
-LolliSchoolsLocation
+readRDS("LolliSchoolsLocation.rds")
 ```
 
 ### and another one will be needed here! 
 
 ```{r}
-load("barsCrimeDay.rdata")
-barsCrimeDay
+readRDS("barsCrimeDay.rds")
 ```
 

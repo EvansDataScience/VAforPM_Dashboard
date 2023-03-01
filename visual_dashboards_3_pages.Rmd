@@ -20,15 +20,14 @@ Column {.tabset}
 ### Chart A
 
 ```{r}
-load("barsCrimeDay.rdata")
-barsCrimeDay
+readRDS("barsCrimeDay.rds")
+
 ```
 
 ### Chart B
 
 ```{r}
-load("PointCitiesCluster.rdata")
-PointCitiesCluster
+readRDS("PointCitiesCluster.rds")
 ```
 
 
@@ -43,8 +42,7 @@ Row
 ### Chart C
 
 ```{r}
-load("LolliSchoolsLocation.rdata")
-LolliSchoolsLocation
+readRDS("LolliSchoolsLocation.rds")
 ```
 
 Row
@@ -53,8 +51,7 @@ Row
 ### Chart D
 
 ```{r}
-load("BoxReducedLunch.rdata")
-BoxReducedLunch
+readRDS("BoxReducedLunch.rds")
 ```
 
 Maps
@@ -66,13 +63,11 @@ Column {.tabset .tabset-fade}
 ### Colored polygons
 
 ```{r}
-load("mapYears.rdata")
-mapYears
+readRDS("polygonMapCrime.rds")
 ```
 
 ### Points
 
 ```{r}
-load("mapCrimeYears.rdata")
-mapCrimeYears
+readRDS("pointMapCrimeStatic.rds")
 ```

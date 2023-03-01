@@ -19,95 +19,39 @@ link='eduwa.rda'
 load(file=link)
 eduwa=eduwa[complete.cases(eduwa),]#no missing values
 
-# saving statistics for the data to plot
-statVals=summary(eduwa$Reduced.Lunch,digits = 3)[1:6]
-statVals=as.vector(statVals) # must turn into a vector
 
-# computing the upper threshold
-theIQR=IQR(eduwa$Reduced.Lunch,na.rm = T)
-upperT=summary(eduwa$Reduced.Lunch)[[5]] + theIQR*1.5
-
-# computing amount of outliers
-numOutliers=sum(eduwa$Reduced.Lunch>upperT,na.rm = T)
-
-# texts to use in plot
-txtUpper=paste0('Threshold:',upperT)
-txtOut=paste0('Total outlying schools: ',numOutliers)
-
-# I will color the "mean" (in statVals)
-statCols=c("black","black","black","blue","black","black")
 
 # THE BOXPLOT
 library(ggplot2)
 ## base
-base= ggplot(eduwa,aes(x=0,y = Reduced.Lunch)) + 
+base= ggplot(eduwa,
+             aes(x=0,y = Reduced.Lunch)) + 
       theme_classic()  
-## horizontal boxplot
-b1= base + geom_boxplot() + coord_flip()
-##  breaks in y-axis will be the 'statVals' (horizontal)
-b1=b1+ scale_y_continuous(breaks = statVals) 
-## customizing text in the x-axis (flipped)
-b1=b1+theme(axis.text.x = element_text(angle = 60,
-                                       face = 'bold',
-                                       size = 7,
-                                       vjust = 0.5)) + 
-    ## coloring
-    theme(axis.text.x=ggtext::element_markdown(colour=statCols)) +
-    ## customizing text in the y-axis (flipped)
-    theme(axis.text.y = element_blank(),
-          axis.ticks.y = element_blank(),
-          axis.title.y = element_blank()) +
-    ## plot caption
-    theme(plot.caption = element_text(hjust=0))
+
+##  boxplot
+b1= base + geom_boxplot()
+
+## horizontal
+b1=b1 +coord_flip()
+
+## no text on the vertical
+b1=b1+  theme(axis.text.x = element_blank(),
+              axis.ticks.x = element_blank(),
+              axis.title.x = element_blank())
+
 ## customizing titles
-textForCaption="WA State official records\nNote: Relevant values for boxplot shown on axis.\nMean value in blue."
-b1=b1 + labs(title = "Reduced lunch distribution",
-             subtitle = "WA State (2023)",
+textForCaption="Source: WA State official records\nNote: Relevant values for boxplot shown on axis.\nMean value in blue."
+BoxReducedLunch=b1 + labs(title = "Reduced lunch distribution",
+             subtitle = "All grades - WA State (2023)",
              caption = textForCaption,
              y= "Count of Students benefitted")
-## annotating
-b1_ann = b1 + geom_hline(yintercept = upperT,
-                         color='red',
-                         linetype="dotted",
-                         linewidth=1) 
-b1_ann=b1_ann + annotate(geom = 'text',
-                         size=3,
-                         label=txtUpper,
-                         y = upperT+5,
-                         x=0.2,
-                         angle=90) # text angle
 
-BoxReducedLunch=b1_ann + annotate(geom = 'text',
-                         size=3,
-                         label=txtOut,
-                         y = upperT+60,
-                         x=0.1,
-                         angle=0)
 BoxReducedLunch
 ```
 
 ```{r save-BoxReducedLunch, echo=FALSE}
 #saving plot
-save(BoxReducedLunch, file = "BoxReducedLunch.rdata")
-```
-
-```{r dataPrep-LolliSchoolsLocation}
-# Preparing Frequency Table
-absoluteT=table(eduwa$LocaleType) 
-propT=prop.table(absoluteT)*100
-tableFreq=as.data.frame(absoluteT)
-names(tableFreq)=c("Locale","Count")
-tableFreq$Percent=as.vector(propT)
-
-# order of locales by percent
-tableFreq=tableFreq[order(tableFreq$Percent),]
-
-# adding columns to frequency table for lollipop
-tableFreq$gap=tableFreq$Percent-25
-tableFreq$PositiveGap=ifelse(tableFreq$gap>0,"Yes","No")
-
-# save data frame: tableFreq
-write.csv(tableFreq,"tableFreq.csv",row.names = F)
+saveRDS(BoxReducedLunch, file = "BoxReducedLunch.rds")
 ```
 
 
@@ -173,60 +117,10 @@ LolliSchoolsLocation
 
 ```{r save-LolliSchoolsLocation, echo=FALSE}
 #save plot
-save(LolliSchoolsLocation, file = "LolliSchoolsLocation.rdata")
+saveRDS(LolliSchoolsLocation, file = "LolliSchoolsLocation.rds")
 ```
 
-```{r dataPrep-barsCrimeDay}
-# clear memory
-rm(list = ls())
-# collecting the data
-crimes=read.csv("SPD_Crime_Data__2008-Present.csv")
-crimes=crimes[complete.cases(crimes),]
-row.names(crimes)=NULL
 
-#set the date column
-library("lubridate")
-stringDate=crimes$Offense.Start.DateTime
-formatDate="%m/%d/%y %H:%M:%S %p" #also the time
-crimes$Offense.Start.DateTime=parse_date_time(stringDate,formatDate)
-#create columns with date information
-crimes$year=year(crimes$Offense.Start.DateTime)
-crimes$weekDay=wday(crimes$Offense.Start.DateTime,label = T)
-crimes$dayHour=hour(crimes$Offense.Start.DateTime)
-
-
-#subset
-crimes2019_22=crimes[crimes$year>2018 & crimes$year<2023,]
-rm(crimes)
-#categorize daytime
-dayTimeCat=c("Night", "Morning", "Afternoon", "Evening")
-crimes2019_22$dayTime = cut(x=crimes2019_22$dayHour, 
-                            breaks = c(0,6,12,18,23), 
-                            labels = dayTimeCat,
-                            include.lowest=TRUE)
-#changing capitalization 
-library(stringr)
-#### first renaming column
-names(crimes2019_22)=gsub("Offense.Parent.Group",#old names
-                          "crimeName",#new names
-                          names(crimes2019_22)) #all current names
-# then...
-crimes2019_22$crimeName=str_to_title(crimes2019_22$crimeName)
-
-#two way table facet plot
-CrimeDay=table(crimes2019_22$crimeName,
-               crimes2019_22$dayTime)
-#making a data frame from contingency table
-CrimeDayDF=as.data.frame(CrimeDay)
-CrimeDay_mgCol=prop.table(CrimeDay,margin = 2) #marginal
-names(CrimeDayDF)=c("crime","daytime","counts")#renaming
-#adding marginal
-CrimeDayDF$share=as.data.frame(CrimeDay_mgCol)[,3]
-CrimeDayDF$share=round(100*CrimeDayDF$share,1)
-# save table
-write.csv(CrimeDayDF,"CrimebyDaytime_2019_22.csv",row.names=F)
-saveRDS(crimes2019_22,'crimes2019_22.rds')
-```
 
 
 ```{r plot-barsCrimeDay}
@@ -264,42 +158,10 @@ barsCrimeDay
 ```
 
 ```{r save-barsCrimeDay, echo=FALSE}
-save(barsCrimeDay, file = "barsCrimeDay.rdata")
+saveRDS(barsCrimeDay, file = "barsCrimeDay.rds")
 ```
 
-```{r dataPrep-LineCrimeTime, message=FALSE}
-# clear memory
-rm(list = ls())
-crimes=readRDS('crimes2019_22.rds')
 
-#saving TOP 4 crimes
-topCrimes=names(tail(sort(table(crimes$crimeName)),4))
-
-#recoding crimes in a new variable
-crimes$crimeMini=ifelse(crimes$crimeName %in%topCrimes,crimes$crimeName,"Other")
-#recoding the new variable
-crimes$crimeMini=gsub("Assault Offenses","Asault",crimes$crimeMini)
-crimes$crimeMini=gsub("Burglary/Breaking&Entering","Burglary",crimes$crimeMini)
-crimes$crimeMini=gsub("Destruction/Damage/Vandalism Of Property","Vandalism",crimes$crimeMini)
-crimes$crimeMini=gsub("Larceny-Theft","Theft",crimes$crimeMini)
-
-#no missing
-crimes=crimes[complete.cases(crimes),]
-
-#create column year-month
-library(lubridate)
-crimes$year_week <- floor_date(crimes$Offense.Start.DateTime,"week")
-
-
-saveRDS(crimes,'crimes2019_22.rds')
-
-# prepare count per month-year
-crimeDate=as.data.frame(table(crimes$year_week))  # date will be a factor
-names(crimeDate)=c("date",'count')
-#formatting column in Freq Table:
-crimeDate$date=as.Date(crimeDate$date)
-saveRDS(crimeDate,"crimeWeeklyCount.rds") # to keep date format
-```
 
 ```{r plot-LineCrimeTime, message=FALSE}
 # clear memory
@@ -320,43 +182,10 @@ Line_crimeTime
 ```
 
 ```{r save-Line_crimeTime, echo=FALSE}
-save(Line_crimeTime, file = "Line_crimeTime.rdata")
+saveRDS(Line_crimeTime, file = "Line_crimeTime.rds")
 ```
 
-```{r dataPrep-citiesLong}
-# clean memory
-rm(list = ls()) 
 
-# location of the data
-link="safeCitiesIndexAll.xlsx"
-
-# 'rio' can be used to import EXCEL files:
-library(rio)
-safe=import(link)
-
-library(magrittr)
-safe$DIN=apply(safe[,c(grep("D_In_",names(safe) ))],1,mean)%>%round(2)
-safe$DOUT=apply(safe[,c(grep("D_Out_",names(safe) ))],1,mean)%>%round(2)
-
-safe$HIN=apply(safe[,c(grep("H_In_",names(safe) ))],1,mean)%>%round(2)
-
-safe$HOUT=apply(safe[,c(grep("H_Out_", names(safe) ))],1,mean)%>%round(2)
-
-safe$IIN=apply(safe[,c(grep("I_In_", names(safe) ))],1,mean)%>%round(2)
-
-safe$IOUT=apply(safe[,c(grep("I_Out_", names(safe) ))],1,mean)%>%round(2)
-
-safe$PIN=apply(safe[,c(grep("P_In_", names(safe) ))],1,mean)%>%round(2)
-
-safe$POUT=apply(safe[,c(grep("P_Out_", names(safe) ))],1,mean)%>%round(2)
-
-safeINS=safe[,c(1,grep("IN$", colnames(safe)))] # '$' for 'end with'.
-
-names(safeINS)=c("city",'Digital','Health','Infrastructure','Personal')
-safeINS_long=reshape2::melt(safeINS,id.vars = 'city')
-
-write.csv(safeINS_long,"safeINS_long.csv")
-```
 
 ```{r plot-lolliSafetyCity}
 # clean memory
@@ -382,37 +211,10 @@ lolliSafetyCity
 
 
 ```{r save-lolliSafetyCity, echo=FALSE}
-save(lolliSafetyCity, file = "lolliSafetyCity.rdata")
+saveRDS(lolliSafetyCity, file = "lolliSafetyCity.rds")
 ```
 
-```{r dataPrep-citiesCluster}
-# clean memory
-rm(list = ls()) 
 
-# location of the data
-link="safeCitiesIndexAll.xlsx"
-
-# 'rio' can be used to import EXCEL files:
-library(rio)
-safe=import(link)
-
-allIN=safe[,c(grep("_In_", names(safe) ))]
-allIN$city=safe$city
-dist_in_safe=dist(allIN[,-24])
-
-processResults= cluster::pam(x=dist_in_safe,
-              k = 3, cluster.only = F)
-
-#add to dataframe
-allIN$cluster=processResults$clustering
-
-theMap=cmdscale(dist_in_safe,k = 2)
-
-allIN$dim1=theMap[,1]
-allIN$dim2=theMap[,2]
-
-write.csv(allIN,'allIN.csv')
-```
 ```{r plot-PointCitiesCluster, message=FALSE,warning=FALSE}
 # clean memory
 rm(list = ls()) 
@@ -448,89 +250,15 @@ pointsHere
 ```
 
 ```{r save-PointCitiesCluster, echo=FALSE}
-save(PointCitiesCluster, file = "PointCitiesCluster.rdata")
+saveRDS(PointCitiesCluster, file = "PointCitiesCluster.rds")
 ```
 
-```{r dataPrep-crimes, message=FALSE,warning=FALSE, prompt=FALSE,results='hide'}
-# clean memory
-rm(list = ls()) 
-crimes=readRDS("crimes2019_22.rds")
-#names(crimes)
-ToKeep=c("year",'crimeMini',"MCPP","Longitude","Latitude"  )
-crimeTimePlace=crimes[,ToKeep]
-rm(crimes) # remove from memory
 
-#table(crimeTimePlace$MCPP) # check bad values, then correct
-crimeTimePlace$MCPP=ifelse(crimeTimePlace$MCPP=='CAPTIOL HILL',
-                           "CAPITOL HILL", #yes
-                           crimeTimePlace$MCPP) #no
-crimeTimePlace$MCPP=ifelse(crimeTimePlace$MCPP%in%c('UNKNOWN',"<Null>"),
-                           NA,
-                           crimeTimePlace$MCPP)
-# get rid of NA
-crimeTimePlace=crimeTimePlace[complete.cases(crimeTimePlace),]
-
-saveRDS(crimeTimePlace,'crimeTimePlace2019_22.rds')
-
-# counting crimes per year and neighborhood
-crimeYear=as.data.frame(table(crimeTimePlace$MCPP,crimeTimePlace$year))
-names(crimeYear)=c("NEIGHBORHOOD",'year','count')
-# making sure it is a text:
-crimeYear$NEIGHBORHOOD=as.character(crimeYear$NEIGHBORHOOD)
-
-library(sf)
-NeighborhoodMap=read_sf("Micro_Community_Policing_Plans.geojson")
-
-crimeYear[crimeYear$NEIGHBORHOOD=="MADRONA/LESCHI",'NEIGHBORHOOD']="LESCHI/MADRONA"
-crimeYear[crimeYear$NEIGHBORHOOD=="CHINATOWN/INTERNATIONAL DISTRICT",'NEIGHBORHOOD']="INTERNATIONAL DISTRICT"
-
-# adding info
-NeighborhoodMap=merge(NeighborhoodMap,crimeYear)
-# saving
-st_write(NeighborhoodMap, "NeighborhoodMap_crimecount.geojson",delete_dsn = T)
-
-#coordinates as spatial elements
-crimes_dot_map = st_as_sf(crimeTimePlace, 
-                         coords = c("Longitude","Latitude"),
-                         crs = st_crs(NeighborhoodMap)) # shared
-boundsMap=st_bbox(NeighborhoodMap)%>% st_as_sfc()
-
-crimes_dot_map=st_intersection(crimes_dot_map,
-                               boundsMap)
-#who are the top 4?
-top_4=names(head(sort(table(crimes_dot_map$MCPP),decreasing = T),4))
-
-#saving all
-st_write(crimes_dot_map, "crimes_dot_map.geojson",delete_dsn = T)
-
-#saving just top 4 without Other
-str(crimes_dot_map$MCPP)
-crimes_dot_map_allTop4=crimes_dot_map[crimes_dot_map$MCPP%in%top_4,]
-crimes_dot_map_allTop4=crimes_dot_map_allTop4[crimes_dot_map_allTop4$crimeMini!='Other',]
-st_write(crimes_dot_map_allTop4, "crimes_dot_map_allTop4.geojson",delete_dsn = T)
-
-# saving each top
-top1=crimes_dot_map_allTop4[crimes_dot_map_allTop4$MCPP==top_4[1],]
-st_write(top1, "crimes_dot_map_top1.geojson",delete_dsn = T)
-
-# saving each top
-top2=crimes_dot_map_allTop4[crimes_dot_map_allTop4$MCPP==top_4[2],]
-st_write(top2, "crimes_dot_map_top2.geojson",delete_dsn = T)
-
-# saving each top
-top3=crimes_dot_map_allTop4[crimes_dot_map_allTop4$MCPP==top_4[3],]
-st_write(top3, "crimes_dot_map_top3.geojson",delete_dsn = T)
-
-# saving each top
-top4=crimes_dot_map_allTop4[crimes_dot_map_allTop4$MCPP==top_4[4],]
-st_write(top4, "crimes_dot_map_top4.geojson",delete_dsn = T)
-
-```
-```{r plot-mapYears, message=FALSE}
+```{r plot-polygonMapCrime, message=FALSE}
 # clean memory
 rm(list = ls()) 
 library(sf)
-MapCount=read_sf("NeighborhoodMap_crimecount.geojson")
+MapCount=read_sf("NeighborhoodCrime_polygons_Long.geojson")
 
 library(ggplot2)
 base=ggplot(data=MapCount) + theme_void()
@@ -539,22 +267,21 @@ mapYears=base + geom_sf(aes(fill=count),
 mapYears=mapYears + facet_grid(~year) 
 mapYears=mapYears + scale_fill_gradient(low = 'yellow',
                                  high= 'blue')
-mapYears=mapYears + labs(title = "Crime events in Seattle by year",
+polygonMapCrime=mapYears + labs(title = "Crime events in Seattle by year",
                          subtitle = "All crime types (2019-2022)",
                          caption="Source: Seattle Open Data Portal\nand Seattle Police Department.")
-mapYears
+polygonMapCrime
 ```
 
-```{r save-mapYears, echo=FALSE}
-save(mapYears, file = "mapYears.rdata")
+```{r save-polygonMapCrime, echo=FALSE}
+saveRDS(polygonMapCrime, file = "polygonMapCrime.rds")
 ```
 
-```{r plot-mapCrimeYears, message=FALSE}
+```{r plot-pointMapCrime, message=FALSE}
 # clean memory
 rm(list = ls()) 
 library(sf)
-PointLocations=read_sf("crimes_dot_map_allTop4.geojson")
-
+PointLocations=read_sf("NeighborhoodCrime_points_worst4.geojson")
 
 
 library(ggplot2)
@@ -569,227 +296,247 @@ subText="Showing the Worse 4 Neighborhoods (2019-2022)"
 aMap=aMap + labs(title = textTitle,
                    subtitle = subText,
                    caption=textCapt)
-mapCrimeYears=aMap + theme(strip.text.y = element_text(angle = -90))
+# this WILL be exported separately
+pointMapCrime=aMap + theme(strip.text.y = element_text(angle = -90))
+
 
 #alpha for legend symbols
-hereMap= mapCrimeYears + 
+pointMapCrimeStatic= pointMapCrime + 
          guides(colour = guide_legend(override.aes = 
                                       list(alpha = 1))) 
 # reposition title and subtitle :
-hereMap= hereMap + 
+pointMapCrimeStatic= pointMapCrimeStatic + 
       theme(plot.title = element_text(vjust = 3,hjust=0.5), 
             plot.subtitle = element_text(vjust = 4,hjust = 0.5))
 
 # reposition legend, and more
-hereMap= hereMap + theme(
+pointMapCrimeStatic= pointMapCrimeStatic + theme(
             legend.position=c(-0.7,0.3),
             #space between text and symbol in legend
             legend.spacing.x = unit(0,units = 'cm'),
             legend.text = element_text(size=6)) #text size
-hereMap
+pointMapCrimeStatic
 ```
 
-```{r save-mapCrimeYears, echo=FALSE}
-save(mapCrimeYears, file = "mapCrimeYears.rdata")
+
+```{r save-pointMapCrime, echo=FALSE}
+
+saveRDS(pointMapCrime, file = "pointMapCrime.rds")
+
+saveRDS(pointMapCrimeStatic, file = "pointMapCrimeStatic.rds")
 ```
 
-```{r dataPrep-plotMapYearsLeaflet}
+```{r plot-PolygonLeaflet}
 rm(list = ls()) 
 library(leaflet)
 library(sf)
-MapCount=read_sf("NeighborhoodMap_crimecount.geojson")
+NeighBrHdCount=read_sf("NeighborhoodCrime_polygons_Wide.geojson")
 
+# preparePalette (no facet -then manually)
+crimeLong=read.csv("crimeYearLong.csv")
+paletteHere="YlOrBr"
+Cuts=5
+paletteFun=colorQuantile(palette = paletteHere, 
+                      domain = crimeLong$count,
+                      n = Cuts)# N bins (quantiles)
 
-# color segun valor
-MapCount2019=MapCount[MapCount$year==2019,]
-paletteFun=colorQuantile("YlGnBu", 
-                         MapCount2019$count,
-                         n = 5)
-# the base map
-base= leaflet() %>% addTiles()
-final2019 = base %>% 
-         addPolygons(data=MapCount2019,
+LeafletPolyg2019 = leaflet() %>% addTiles() %>% 
+         addPolygons(data=NeighBrHdCount,
+                     label=~paste0(NEIGHBORHOOD,': ',count_2019),
                      weight = 0, #width border
-                     opacity =  1, # 0 transparencia total
-                     fillOpacity = 0.8, # contraste de paleta
-                     fillColor = ~paletteFun(count)) # coloreando
+                     opacity =  1, #  alpha of border
+                     fillOpacity = 0.8, # alpha fill
+                     fillColor = ~paletteFun(count_2019)) %>%
+          addLegend(position='bottomleft',
+            pal=paletteFun,values = crimeLong$count)
 
-# color segun valor
-MapCount2020=MapCount[MapCount$year==2020,]
-paletteFun=colorQuantile("YlGnBu", 
-                         MapCount2020$count,
-                         n = 5)
-# the base map
-base= leaflet() %>% addTiles()
-final2020 = base %>% 
-         addPolygons(data=MapCount2020,
+LeafletPolyg2020 = leaflet() %>% addTiles() %>% 
+         addPolygons(data=NeighBrHdCount,
+                     label=~paste0(NEIGHBORHOOD,': ',count_2020),
                      weight = 0, #width border
-                     opacity =  1, # 0 transparencia total
-                     fillOpacity = 0.8, # contraste de paleta
-                     fillColor = ~paletteFun(count)) # coloreando
+                     opacity =  1, #  alpha of border
+                     fillOpacity = 0.8, # alpha fill
+                     fillColor = ~paletteFun(count_2020)) # coloreando
 
-# color segun valor
-MapCount2021=MapCount[MapCount$year==2021,]
-paletteFun=colorQuantile("YlGnBu", 
-                         MapCount2021$count,
-                         n = 5)
-# the base map
-base= leaflet() %>% addTiles()
-final2021 = base %>% 
-         addPolygons(data=MapCount2021,
+LeafletPolyg2021 = leaflet() %>% addTiles() %>% 
+         addPolygons(data=NeighBrHdCount,
+                     label=~paste0(NEIGHBORHOOD,': ',count_2021),
                      weight = 0, #width border
-                     opacity =  1, # 0 transparencia total
-                     fillOpacity = 0.8, # contraste de paleta
-                     fillColor = ~paletteFun(count)) # coloreando
+                     opacity =  1, #  alpha of border
+                     fillOpacity = 0.8, # alpha fill
+                     fillColor = ~paletteFun(count_2021)) 
 
-# color segun valor
-MapCount2022=MapCount[MapCount$year==2022,]
-paletteFun=colorQuantile("YlGnBu", 
-                         MapCount2022$count,
-                         n = 5)
-# the base map
-base= leaflet() %>% addTiles()
-final2022 = base %>% 
-         addPolygons(data=MapCount2022,
+
+LeafletPolyg2022 = leaflet() %>% addTiles() %>% 
+         addPolygons(data=NeighBrHdCount,
+                     label=~paste0(NEIGHBORHOOD,': ',count_2022),
                      weight = 0, #width border
-                     opacity =  1, # 0 transparencia total
-                     fillOpacity = 0.8, # contraste de paleta
-                     fillColor = ~paletteFun(count)) # coloreando
+                     opacity =  1, #  alpha of border
+                     fillOpacity = 0.8, # alpha fill
+                     fillColor = ~paletteFun(count_2022)) %>%
+  addLegend(position='topright',
+            pal=paletteFun,values = crimeLong$count,
+            labFormat = function(type, cuts,p) {
+                            n = length(cuts)
+                            cuts = paste0(cuts[-n], " - ",
+                                          cuts[-1])
+  })
 
-saveRDS(final2019,"final2019.rds")
-saveRDS(final2020,"final2020.rds")
-saveRDS(final2021,"final2021.rds")
-saveRDS(final2022,"final2022.rds")
-
-
-```
-
-```{r plot-plotMapYearsLeaflet}
-rm(list = ls()) 
-library(leaflet)
+#####
 library(manipulateWidget)
-combineWidgets(readRDS("final2019.rds"),
-     readRDS("final2020.rds"),
-     readRDS("final2021.rds"),
-     readRDS("final2022.rds"))
+combineWidgets(LeafletPolyg2019,LeafletPolyg2020,
+               LeafletPolyg2021, LeafletPolyg2022)
 ```
 
 
-```{r dataPrep-MapYearsPointLeaflet}
+
+```{r save-PolygonLeaflet}
+
+saveRDS(LeafletPolyg2019,"LeafletPolyg2019.rds")
+saveRDS(LeafletPolyg2020,"LeafletPolyg2020.rds")
+saveRDS(LeafletPolyg2021,"LeafletPolyg2021.rds")
+saveRDS(LeafletPolyg2022,"LeafletPolyg2022.rds")
+```
+
+
+```{r plot-PointsLeaflet}
+
 rm(list = ls()) 
 library(leaflet)
 library(sf)
 
-PointLocations=read_sf("crimes_dot_map_top1.geojson")
+PointLocations=read_sf("NeighborhoodCrime_points_worst4.geojson")
 
 library(htmltools)
 
-title2019 <- tags$p(tags$style("p {color: red; font-size:12px}"),
-            tags$b("2019"))
-title2020 <- tags$p(tags$style("p {color: red; font-size:12px}"),
-            tags$b("2020"))
-title2021 <- tags$p(tags$style("p {color: red; font-size:12px}"),
-            tags$b("2021"))
-title2022 <- tags$p(tags$style("p {color: red; font-size:12px}"),
-            tags$b("2022"))
+title2019 <- tags$p(tags$b("2019"))
+title2020 <- tags$p(tags$b("2020"))
+title2021 <- tags$p(tags$b("2021"))
+title2022 <- tags$p(tags$b("2022"))
 
-###
-CrimeVector=c("Asault", "Burglary","Theft","Vandalism")
-Ps19=PointLocations[PointLocations$year==2019,]
+MyCrimeGroup=c("Asault", "Burglary","Theft","Vandalism")
+Points19=PointLocations[PointLocations$year==2019,]
+Points20=PointLocations[PointLocations$year==2020,]
+Points21=PointLocations[PointLocations$year==2021,]
+Points22=PointLocations[PointLocations$year==2022,]
 
-final2019p=leaflet() %>% addTiles() %>% 
-    addCircleMarkers(data=Ps19[Ps19$crimeMini=='Asault',], radius=1,
-               group = "Asault")%>% 
-    addCircleMarkers(data = Ps19[Ps19$crimeMini=='Burglary',],radius=1,
-               group = "Burglary")%>% 
-    addCircleMarkers(data = Ps19[Ps19$crimeMini=='Theft',],radius=1,
-               group = "Theft")%>%
-    addCircleMarkers(data = Ps19[Ps19$crimeMini=='Vandalism',],radius=1,
-               group = "Vandalism")%>%
-    addLayersControl(
-        baseGroups = CrimeVector,
-    options = layersControlOptions(collapsed = FALSE)
-  )%>%
-addControl(title2019, position = "bottomright" )
+LeafletPoints2019=leaflet() %>% addTiles() %>% 
+    addCircleMarkers(data=Points19[Points19$crimeMini=='Asault',],
+                     radius=1,
+                     group = "Asault")%>% 
+    addCircleMarkers(data = Points19[Points19$crimeMini=='Burglary',],
+                     radius=1,
+                     group = "Burglary")%>% 
+    addCircleMarkers(data = Points19[Points19$crimeMini=='Theft',],
+                     radius=1,
+                     group = "Theft")%>%
+    addCircleMarkers(data = Points19[Points19$crimeMini=='Vandalism',],
+                     radius=1,
+                     group = "Vandalism")%>%
+        addLayersControl(baseGroups = MyCrimeGroup,
+                     options = layersControlOptions(collapsed = FALSE))%>%
+            addControl(title2019, position = "bottomright" )
 
-
-
-Ps20=PointLocations[PointLocations$year==2020,]
-
-final2020p=leaflet() %>% addTiles() %>% 
-    addCircleMarkers(data=Ps20[Ps20$crimeMini=='Asault',], radius=1,
-               group = "Asault")%>% 
-    addCircleMarkers(data = Ps20[Ps20$crimeMini=='Burglary',],radius=1,
-               group = "Burglary")%>% 
-    addCircleMarkers(data = Ps20[Ps20$crimeMini=='Theft',],radius=1,
-               group = "Theft")%>%
-    addCircleMarkers(data = Ps20[Ps20$crimeMini=='Vandalism',],radius=1,
-               group = "Vandalism")%>%
-    addLayersControl(
-        baseGroups = CrimeVector,
-    options = layersControlOptions(collapsed = FALSE)
-  )%>%
-addControl(title2020, position = "bottomright" )
+LeafletPoints2020=leaflet() %>% addTiles() %>% 
+    addCircleMarkers(data=Points20[Points20$crimeMini=='Asault',],
+                     radius=1,
+                     group = "Asault")%>% 
+    addCircleMarkers(data = Points20[Points20$crimeMini=='Burglary',],
+                     radius=1,
+                     group = "Burglary")%>% 
+    addCircleMarkers(data = Points20[Points20$crimeMini=='Theft',],
+                     radius=1,
+                     group = "Theft")%>%
+    addCircleMarkers(data = Points20[Points20$crimeMini=='Vandalism',],
+                     radius=1,group = "Vandalism")%>%
+        addLayersControl(baseGroups = MyCrimeGroup,
+                         options = layersControlOptions(collapsed = FALSE))%>%
+            addControl(title2020, position = "bottomright" )
 ##
 
-
-Ps21=PointLocations[PointLocations$year==2021,]
-
-final2021p=leaflet() %>% addTiles() %>% 
-    addCircleMarkers(data=Ps21[Ps21$crimeMini=='Asault',], radius=1,
-               group = "Asault")%>% 
-    addCircleMarkers(data = Ps21[Ps21$crimeMini=='Burglary',],radius=1,
-               group = "Burglary")%>% 
-    addCircleMarkers(data = Ps21[Ps21$crimeMini=='Theft',],radius=1,
-               group = "Theft")%>%
-    addCircleMarkers(data = Ps21[Ps21$crimeMini=='Vandalism',],radius=1,
-               group = "Vandalism")%>%
-    addLayersControl(
-        baseGroups = CrimeVector,
-    options = layersControlOptions(collapsed = FALSE)
-  )%>%
-addControl(title2021, position = "bottomright" )
+LeafletPoints2021=leaflet() %>% addTiles() %>% 
+    addCircleMarkers(data=Points21[Points21$crimeMini=='Asault',],
+                     radius=1,
+                     group = "Asault")%>% 
+    addCircleMarkers(data = Points21[Points21$crimeMini=='Burglary',],
+                     radius=1,
+                     group = "Burglary")%>% 
+    addCircleMarkers(data = Points21[Points21$crimeMini=='Theft',],
+                     radius=1,
+                     group = "Theft")%>%
+    addCircleMarkers(data = Points21[Points21$crimeMini=='Vandalism',],
+                     radius=1,
+                     group = "Vandalism")%>%
+        addLayersControl(baseGroups = MyCrimeGroup,
+                     options = layersControlOptions(collapsed = FALSE))%>%
+            addControl(title2021, position = "bottomright" )
 ###
 
+LeafletPoints2022=leaflet() %>% addTiles() %>% 
+    addCircleMarkers(data=Points22[Points22$crimeMini=='Asault',], 
+                     radius=1,
+                     group = "Asault")%>% 
+    addCircleMarkers(data = Points22[Points22$crimeMini=='Burglary',],
+                     radius=1,
+                     group = "Burglary")%>% 
+    addCircleMarkers(data = Points22[Points22$crimeMini=='Theft',],
+                     radius=1,
+                     group = "Theft")%>%
+    addCircleMarkers(data = Points22[Points22$crimeMini=='Vandalism',],
+                     radius=1,
+                     group = "Vandalism")%>%
+        addLayersControl(baseGroups = MyCrimeGroup,
+                         options = layersControlOptions(collapsed = FALSE))%>%
+            addControl(title2022, position = "bottomright" )
 
-Ps22=PointLocations[PointLocations$year==2022,]
 
-final2022p=leaflet() %>% addTiles() %>% 
-    addCircleMarkers(data=Ps22[Ps22$crimeMini=='Asault',], radius=1,
-               group = "Asault")%>% 
-    addCircleMarkers(data = Ps22[Ps22$crimeMini=='Burglary',],radius=1,
-               group = "Burglary")%>% 
-    addCircleMarkers(data = Ps22[Ps22$crimeMini=='Theft',],radius=1,
-               group = "Theft")%>%
-    addCircleMarkers(data = Ps22[Ps22$crimeMini=='Vandalism',],radius=1,
-               group = "Vandalism")%>%
-    addLayersControl(
-        baseGroups = CrimeVector,
-    options = layersControlOptions(collapsed = FALSE)
-  )%>%
-addControl(title2022, position = "bottomright" )
+library(leaflet.minicharts) # syncWith
+library(manipulateWidget) # combineWidgets
 
-saveRDS(final2019p,"final2019p.rds")
-saveRDS(final2020p,"final2020p.rds")
-saveRDS(final2021p,"final2021p.rds")
-saveRDS(final2022p,"final2022p.rds")
+combineWidgets(LeafletPoints2019%>%
+    syncWith("maps"),
+     LeafletPoints2020%>%
+    syncWith("maps"),
+    
+     LeafletPoints2021%>%
+    syncWith("maps"),
+    
+     LeafletPoints2022%>%
+    syncWith("maps"))
+
 ```
 
-```{r plot-MapYearsPointLeaflet}
-rm(list = ls()) 
-library(leaflet)
-library(leaflet.minicharts)
-library(manipulateWidget)
-library(mapview)
-combineWidgets(readRDS("final2019p.rds")%>%
-    syncWith("maps"),
-     readRDS("final2020p.rds")%>%
-    syncWith("maps"),
-    
-     readRDS("final2021p.rds")%>%
-    syncWith("maps"),
-    
-     readRDS("final2022p.rds")%>%
-    syncWith("maps"))
+```{r save-MapYearsPointLeaflet}
+
+
+saveRDS(LeafletPoints2019,"LeafletPoints2019.rds")
+saveRDS(LeafletPoints2020,"LeafletPoints2020.rds")
+saveRDS(LeafletPoints2021,"LeafletPoints2021.rds")
+saveRDS(LeafletPoints2022,"LeafletPoints2022.rds")
+```
+
+```{r plot-MapYearsPointLeaflet-cluster}
+LeafletPoints2019_clus=
+    leaflet() %>% addTiles() %>% 
+    addMarkers(data=Points19[Points19$crimeMini=='Asault',],
+               group = "Asault",
+               clusterOptions = markerClusterOptions())%>%
+    addMarkers(data=Points19[Points19$crimeMini=='Burglary',],
+               group = "Burglary",
+               clusterOptions = markerClusterOptions())%>%
+    addMarkers(data = Points19[Points19$crimeMini=='Theft',],
+               group = "Theft",
+               clusterOptions = markerClusterOptions())%>%
+    addMarkers(data = Points19[Points19$crimeMini=='Vandalism',],
+               group = "Vandalism",
+               clusterOptions = markerClusterOptions())%>%
+        addLayersControl(overlayGroups = MyCrimeGroup,
+                     options = layersControlOptions(collapsed = FALSE))%>%
+            addControl(title2019, position = "bottomright" )
+LeafletPoints2019_clus
+```
+
+```{r save-MapYearsPointLeaflet-cluster}
+saveRDS(LeafletPoints2019_clus,"LeafletPoints2019_clus.rds")
 ```
 

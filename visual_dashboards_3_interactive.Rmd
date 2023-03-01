@@ -22,8 +22,8 @@ Row
 ### Chart A
 
 ```{r}
-load("barsCrimeDay.rdata")
-ggplotly(barsCrimeDay)
+
+ggplotly(readRDS("barsCrimeDay.rds"))
 ```
 
 Row
@@ -31,8 +31,7 @@ Row
 ### Chart B
 
 ```{r}
-load("PointCitiesCluster.rdata")
-ggplotly(PointCitiesCluster)
+ggplotly(readRDS("PointCitiesCluster.rds"))
 ```
 
 
@@ -47,8 +46,8 @@ Column {.tabset .tabset-fade}
 ### Chart C
 
 ```{r}
-load("LolliSchoolsLocation.rdata")
-ggplotly(LolliSchoolsLocation)
+
+ggplotly(readRDS("LolliSchoolsLocation.rds"))
 
 ```
 
@@ -56,8 +55,7 @@ ggplotly(LolliSchoolsLocation)
 ### Chart D
 
 ```{r}
-load("BoxReducedLunch.rdata")
-ggplotly(BoxReducedLunch)
+ggplotly(readRDS("BoxReducedLunch.rds"))
 ```
 
 Time
@@ -66,8 +64,7 @@ Time
 ### Crime (I)
 
 ```{r}
-load("Line_crimeTime.rdata")
-ggplotly(Line_crimeTime)
+ggplotly(readRDS("Line_crimeTime.rds"))
 ```
 ### Crime (II)
 ```{r}
@@ -90,20 +87,19 @@ Column {.tabset .tabset-fade}
 ### Colored polygons
 
 ```{r}
-load("mapYears.rdata")
-ggplotly(mapYears)
+ggplotly(readRDS("polygonMapCrime.rds"))
 ```
 
 ### Points
 
 ```{r}
-load("mapCrimeYears.rdata")
+pointMapCrime=readRDS("pointMapCrime.rds")
 
 textTitle="Crime events in Seattle by year and type"
 textCapt="Source: Seattle Open Data Portal\nand Seattle Police Department."
 subText="Showing the Worse 4 Neighborhoods (2019-2022)"
 
-ggplotly(mapCrimeYears  +
+ggplotly(pointMapCrime  +
   theme(plot.margin = margin(2, 2, 2, 1, "cm"),
         panel.spacing = unit(0, "lines"),
         ))%>%
@@ -132,26 +128,31 @@ Column {.tabset .tabset-fade}
 ```{r}
 library(leaflet)
 library(manipulateWidget)
-combineWidgets(readRDS("final2019.rds"),
-     readRDS("final2020.rds"),
-     readRDS("final2021.rds"),
-     readRDS("final2022.rds"))
+combineWidgets(readRDS("LeafletPolyg2019.rds"),
+     readRDS("LeafletPolyg2020.rds"),
+     readRDS("LeafletPolyg2021.rds"),
+     readRDS("LeafletPolyg2022.rds"))
 ```
 
 ### Syncronized
 
 ```{r}
-library(leaflet)
 library(leaflet.minicharts)
 library(manipulateWidget)
-combineWidgets(readRDS("final2019p.rds")%>%
+combineWidgets(readRDS("LeafletPoints2019.rds")%>%
     syncWith("maps"),
-     readRDS("final2020p.rds")%>%
-    syncWith("maps"),
-    
-     readRDS("final2021p.rds")%>%
+     readRDS("LeafletPoints2020.rds")%>%
     syncWith("maps"),
     
-     readRDS("final2022p.rds")%>%
+     readRDS("LeafletPoints2021.rds")%>%
+    syncWith("maps"),
+    
+     readRDS("LeafletPoints2022.rds")%>%
     syncWith("maps"))
+```
+
+### Grouped points
+
+```{r}
+readRDS("LeafletPoints2019_clus.rds")
 ```

@@ -17,15 +17,13 @@ Column {.tabset}
 ### Chart A
 
 ```{r}
-load("barsCrimeDay.rdata")
-barsCrimeDay
+readRDS("barsCrimeDay.rds")
 ```
 
 ### Chart B
 
 ```{r}
-load("PointCitiesCluster.rdata")
-PointCitiesCluster
+readRDS("PointCitiesCluster.rds")
 ```
 
 [comment]: # two plots here
@@ -36,14 +34,12 @@ Column {.tabset}
 ### Chart C
 
 ```{r}
-load("LolliSchoolsLocation.rdata")
-LolliSchoolsLocation
+readRDS("LolliSchoolsLocation.rds")
 ```
 
 ### Chart D
 
 ```{r}
-load("BoxReducedLunch.rdata")
-BoxReducedLunch
+readRDS("BoxReducedLunch.rds")
 ```
 
