@@ -6,7 +6,7 @@ output:
     df_print: paged
 ---
 
-Let's prepara our data and plots. We should also save the date before the final plot.
+Let's prepara our data for the plots.
 
 
 ```{r dataPrep-LolliSchoolsLocation}

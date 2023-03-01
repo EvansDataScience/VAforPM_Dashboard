@@ -1,5 +1,5 @@
 ---
-title: "Dashbords from Evans UW"
+title: "Dashbords from Evans UW-rows"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
